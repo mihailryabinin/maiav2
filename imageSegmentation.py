@@ -20,15 +20,6 @@ class ImageSegmentation:
         print(path_to_dicom_slices)
 
     def getArrayDicomFromPath(self):
-        conf_pacs = dict([
-            ('ip', '192.168.96.18'),
-            ('port', 3002),
-            ('ae_title', 'PACS'),
-            ('description', 'Oncocentr')
-        ])
-        downloder = PacsDownload()
-        downloder.add_pacs(conf_pacs)
-
         dicom_reader = sitk.ImageSeriesReader()
         dicom_files_name = dicom_reader.GetGDCMSeriesFileNames(self.path_to_dicom_slices)
         dicom_reader.SetFileNames(dicom_files_name)
