@@ -1,0 +1,7 @@
+pyqt5
+numpy
+pynetdicom3
+pydicom
+simpleitk
+python3.5
+pillow
