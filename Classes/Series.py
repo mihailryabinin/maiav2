@@ -16,6 +16,7 @@ class Series(object):
     loaded = None
 
     def __init__(self):
+        super().__init__()
         self.patient_info = dict([
             ('PatientID', 0),
             ('PatientName', 0),
@@ -29,7 +30,6 @@ class Series(object):
             ('ManufacturerModelName', 0)
         ])
         self.loaded = False
-        super().__init__()
 
     def download_series(self, folder):
         if folder.type == 'pacs':

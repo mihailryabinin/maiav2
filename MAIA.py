@@ -3,11 +3,7 @@ class MAIA:
         CancerSelectionPenSize = 2.0
 
     class WindowsSettings:
-        PercentWidthForWindowImageSlice = 0.90
-        PercentToolsWidget = 0.1
-        PercentWidth3DViewer = 1 - PercentWidthForWindowImageSlice - PercentToolsWidget
-        SpacePointsBetween2DImages = 10
-        PercentHeightForViewers = 0.85
+        PercentVisibleImageDicomViewer = 0.95
 
     class TextSetting:
         DicomViewerInitText = '<p align="center" style="font-size: 90px">' \

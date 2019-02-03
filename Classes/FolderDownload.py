@@ -14,9 +14,9 @@ class FolderDownload(object):
         super().__init__()
         self.path_to_dicom = path_to_dicom
         self.pattern = pattern
-        self.get_path_to_series()
+        self.set_path_to_series()
 
-    def get_path_to_series(self):
+    def set_path_to_series(self):
         try:
             result = []
             for root, dirs, files in os.walk(self.path_to_dicom):
@@ -50,6 +50,3 @@ class FolderDownload(object):
         else:
             print('Some problem with folders create')
             return -1
-
-    def get_series_folders(self):
-        return self.series_folders

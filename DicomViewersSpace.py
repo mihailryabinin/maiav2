@@ -262,14 +262,40 @@ class SlicesViewer(QLabel):
             self._clearSelectionPoints()
             self.update()
         elif QMouseEvent.button() == Qt.RightButton:
-            self.add_selected_value(QMouseEvent)
+            # self.add_selected_value(QMouseEvent)
+            print(self.hasFocus(), self._type_slice_position)
+            if self.hasFocus():
+                print(self._type_slice_position)
         try:
             if QMouseEvent.button() == Qt.MiddleButton or QMouseEvent.button() == Qt.LeftButton:
+                self.setFocus()
                 self.start_mouse_position = [int(QMouseEvent.x()), int(QMouseEvent.y())]
-            else:
+            elif QMouseEvent.modifiers() == Qt.NoModifier():
                 self.start_mouse_position = [0, 0]
         except Exception as e:
             print(e)
+
+    def keyPressEvent(self, e):
+        key = e.key()
+        if key == Qt.Key_0:
+            power, contrast = 125, 1.3
+        elif key == Qt.Key_1:
+            power, contrast = 90, 12
+        elif key == Qt.Key_2:
+            power, contrast = 90, 1.3
+        elif key == Qt.Key_3:
+            power, contrast = 5, 2.5
+        elif key == Qt.Key_4:
+            power, contrast = 54, 6.1
+        elif key == Qt.Key_5:
+            power, contrast = -400, 0.1
+        elif key == Qt.Key_6:
+            power, contrast = 80, 1
+        else:
+            power, contrast = 190, 8
+
+        self.setPowerArray(power)
+        self.setContrastArray(contrast)
 
     def mouseMoveEvent(self, QMouseEvent):
         if QMouseEvent.modifiers() == Qt.ShiftModifier and self._readyDrawSelectionCancer():
@@ -277,7 +303,7 @@ class SlicesViewer(QLabel):
             y = int(QMouseEvent.y() / self._image_scale_current[1])
             self._setEndSelectionCancerPoint(x, y)
             self.update()
-        elif self.start_mouse_position != [0, 0]:
+        elif self.start_mouse_position != [0, 0] and QMouseEvent.modifiers() == Qt.NoModifier:
             self.setPowerArrayDicomSlices(int(QMouseEvent.y()))
             self.setContrastArrayDicomSlices(int(QMouseEvent.x()))
             self.update()
@@ -533,8 +559,8 @@ class DicomViewersSpace(QFrame):
         self._desktop = QDesktopWidget()
         max_widget_height = self._desktop.availableGeometry(self._desktop.screenNumber(self)).height()
         max_widget_width = self._desktop.availableGeometry(self._desktop.screenNumber(self)).width()
-        self.setFixedWidth(int(max_widget_width * MAIA.WindowsSettings.PercentWidthForWindowImageSlice))
-        self.setFixedHeight(int(max_widget_height * MAIA.WindowsSettings.PercentHeightForViewers))
+        self.setMaximumWidth(int(max_widget_width * MAIA.WindowsSettings.PercentWidthForWindowImageSlice))
+        self.setMaximumHeight(int(max_widget_height * MAIA.WindowsSettings.PercentHeightForViewers))
 
     def loadImagesFromDicom(self, array_dicom_slices):
         Thread(target=self._widget_for_front_slices.setArrayDicomSlices, args=array_dicom_slices).run()

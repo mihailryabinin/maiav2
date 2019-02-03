@@ -37,3 +37,6 @@ class Patient(object):
                 print(e)
         else:
             print('It is not type dict for pat_info')
+
+    def get_series(self):
+        return self.series
