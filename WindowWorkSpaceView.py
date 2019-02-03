@@ -19,7 +19,7 @@ class WindowWorkSpaceView(QFrame):
         self.list_patient = []
 
         self.window_viewer_layout = QGridLayout()
-        self.series_viewer = SeriesViewer(self)
+        self.current_viewer = None
 
         self.patient_viewer = QWidget()
 
@@ -55,14 +55,26 @@ class WindowWorkSpaceView(QFrame):
         h_layout.addLayout(self.window_viewer_layout)
         self.setLayout(h_layout)
 
-    def set_window_viewer_layout(self, number_windows=1):
+    def set_window_viewer_layout(self, number_windows=4):
         if number_windows == 1:
-            self.window_viewer_layout.addWidget(self.series_viewer)
+            series_viewer = SeriesViewer(self)
+            self.window_viewer_layout.addWidget(series_viewer)
             #
         elif number_windows == 2:
             pass
         elif number_windows == 4:
-            pass
+            series_viewer = SeriesViewer(self)
+            series_viewer.set_focus.connect(self.set_current_viewer)
+            self.window_viewer_layout.addWidget(series_viewer, 0, 0)
+            series_viewer = SeriesViewer(self)
+            series_viewer.set_focus.connect(self.set_current_viewer)
+            self.window_viewer_layout.addWidget(series_viewer, 0, 1)
+            series_viewer = SeriesViewer(self)
+            series_viewer.set_focus.connect(self.set_current_viewer)
+            self.window_viewer_layout.addWidget(series_viewer, 1, 0)
+            series_viewer = SeriesViewer(self)
+            series_viewer.set_focus.connect(self.set_current_viewer)
+            self.window_viewer_layout.addWidget(series_viewer, 1, 1)
 
     def load_patient(self, list_patient):
         self.setVisible(True)
@@ -109,5 +121,12 @@ class WindowWorkSpaceView(QFrame):
             return info_widget
 
     def load_serie_to_viewer(self, position):
-        pat, ser = position
-        self.series_viewer.load_series(self.list_patient[pat].get_series()[ser])
+        try:
+            if self.current_viewer is not None:
+                pat, ser = position
+                self.current_viewer.load_series(self.list_patient[pat].get_series()[ser])
+        except Exception as e:
+            print(e)
+
+    def set_current_viewer(self, viewer):
+        self.current_viewer = viewer

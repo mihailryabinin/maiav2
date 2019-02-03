@@ -8,6 +8,8 @@ from MAIA import MAIA
 
 
 class SeriesViewer(QLabel):
+    set_focus = pyqtSignal(QLabel)
+
     def __init__(self, parent, type_demonstration='front'):
         super().__init__()
         self.setParent(parent)
@@ -29,11 +31,6 @@ class SeriesViewer(QLabel):
         self.setStyleSheet('QLabel#SeriesViewer { background-color: black }')
         self.setAlignment(Qt.AlignCenter)
 
-        # desktop = QDesktopWidget()
-        # print(desktop.availableGeometry(desktop.screenNumber(self)).height(),
-        #       desktop.availableGeometry(desktop.screenNumber(self)).width()
-        #       )
-
     def load_series(self, series):
         try:
             if type(series) == Series:
@@ -44,7 +41,11 @@ class SeriesViewer(QLabel):
                 self.image_scale = [image_size, image_size]
                 if self.type_demonstration == "front":
                     self.max_slice = self.image.shape[0]
-                    self.current_slice = self.max_slice // 2
+                elif self.type_demonstration == "top":
+                    self.max_slice = self.image.shape[1]
+                elif self.type_demonstration == "side":
+                    self.max_slice = self.image.shape[2]
+                self.current_slice = self.max_slice // 2
                 self.render_image()
             else:
                 print('SeriesViewer.load_series not need type of series')
@@ -101,7 +102,7 @@ class SeriesViewer(QLabel):
                 self.render_image()
 
     def focusInEvent(self, QFocusEvent):
-        print('fuck')
+        self.set_focus.emit(self)
 
     def mousePressEvent(self, QMouseEvent):
         try:
@@ -109,3 +110,29 @@ class SeriesViewer(QLabel):
                 self.setFocus()
         except Exception as e:
             print(e)
+
+    def keyPressEvent(self, QKeyEvent):
+        if Qt.Key_0 <= QKeyEvent.key() <= Qt.Key_7:
+            self.set_image_settings(QKeyEvent.key())
+
+    def set_image_settings(self, key):
+        light, contrast = 80, 5
+        if key == Qt.Key_0:
+            light, contrast = 125, 1.3
+        elif key == Qt.Key_1:
+            light, contrast = 90, 12
+        elif key == Qt.Key_2:
+            light, contrast = 90, 1.3
+        elif key == Qt.Key_3:
+            light, contrast = 5, 2.5
+        elif key == Qt.Key_4:
+            light, contrast = 54, 6.1
+        elif key == Qt.Key_5:
+            light, contrast = -400, 0.1
+        elif key == Qt.Key_6:
+            light, contrast = 80, 1
+        elif key == Qt.Key_7:
+            light, contrast = 190, 8
+
+        self.image_light, self.image_contrast = light, contrast
+        self.render_image()

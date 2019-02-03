@@ -47,7 +47,6 @@ class PatientMiniView(QLabel):
                                               transformMode=Qt.SmoothTransformation)
 
     def focusInEvent(self, QFocusEvent):
-        print(self.position)
         self.set_focus.emit(self.position)
 
     def mousePressEvent(self, QMouseEvent):
