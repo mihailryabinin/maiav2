@@ -29,10 +29,10 @@ class SeriesViewer(QLabel):
         self.setStyleSheet('QLabel#SeriesViewer { background-color: black }')
         self.setAlignment(Qt.AlignCenter)
 
-        desktop = QDesktopWidget()
-        print(desktop.availableGeometry(desktop.screenNumber(self)).height(),
-              desktop.availableGeometry(desktop.screenNumber(self)).width()
-              )
+        # desktop = QDesktopWidget()
+        # print(desktop.availableGeometry(desktop.screenNumber(self)).height(),
+        #       desktop.availableGeometry(desktop.screenNumber(self)).width()
+        #       )
 
     def load_series(self, series):
         try:
@@ -44,6 +44,7 @@ class SeriesViewer(QLabel):
                 self.image_scale = [image_size, image_size]
                 if self.type_demonstration == "front":
                     self.max_slice = self.image.shape[0]
+                    self.current_slice = self.max_slice // 2
                 self.render_image()
             else:
                 print('SeriesViewer.load_series not need type of series')
@@ -72,9 +73,8 @@ class SeriesViewer(QLabel):
                     image = Image.fromarray(image).convert('RGB')
                     image = ImageQt.ImageQt(image)
                     # noinspection PyCallByClass,PyTypeChecker,PyArgumentList
-                    image = QPixmap.fromImage(image)
-                    image = image.scaled(self.image_scale[2], self.image_scale[0],
-                                         transformMode=Qt.SmoothTransformation)
+                    image = QPixmap.fromImage(image).scaled(self.image_scale[0], self.image_scale[1],
+                                                            transformMode=Qt.SmoothTransformation)
                     self.setPixmap(image)
 
                 elif self.type_demonstration == "side":
@@ -84,10 +84,8 @@ class SeriesViewer(QLabel):
                     image = Image.fromarray(image).convert('RGB')
                     image = ImageQt.ImageQt(image)
                     # noinspection PyCallByClass,PyTypeChecker,PyArgumentList
-                    image = QPixmap.fromImage(image)
-                    image.scaled(self.image_scale[0],
-                                 self.image_scale[1],
-                                 transformMode=Qt.SmoothTransformation)
+                    image = QPixmap.fromImage(image).scaled(self.image_scale[0], self.image_scale[1],
+                                                            transformMode=Qt.SmoothTransformation)
                     self.setPixmap(image)
         except Exception as e:
             print(e)
@@ -101,3 +99,13 @@ class SeriesViewer(QLabel):
             if 0 < self.current_slice + int(QWheelEvent.angleDelta().y() / 10) < self.max_slice:
                 self.current_slice += int(QWheelEvent.angleDelta().y() / 10)
                 self.render_image()
+
+    def focusInEvent(self, QFocusEvent):
+        print('fuck')
+
+    def mousePressEvent(self, QMouseEvent):
+        try:
+            if QMouseEvent.button() == Qt.LeftButton and QMouseEvent.modifiers() == Qt.NoModifier:
+                self.setFocus()
+        except Exception as e:
+            print(e)

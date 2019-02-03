@@ -9,15 +9,15 @@ from pydicom.dataset import Dataset, FileDataset
 class Series(object):
     series_id = None
     study_id = None
-    metrics = None
+    metrics = None  # ?
     image = None
-    number_of_image = None
-    patient_info = None
+    number_of_image = None  # ?
+    series_info = None
     loaded = None
 
     def __init__(self):
         super().__init__()
-        self.patient_info = dict([
+        self.series_info = dict([
             ('PatientID', 0),
             ('PatientName', 0),
             ('PatientSex', 0),
@@ -30,6 +30,7 @@ class Series(object):
             ('ManufacturerModelName', 0)
         ])
         self.loaded = False
+        self.miniature = None
 
     def download_series(self, folder):
         if folder.type == 'pacs':
@@ -56,6 +57,8 @@ class Series(object):
             series_reader.SetFileNames(dicom_files_name)
             self.image = sitk.GetArrayFromImage(series_reader.Execute())
             self.number_of_image = len(self.image)
+            self.series_info.update({'ImagesNumber': self.number_of_image})
+            self.miniature = self.image[self.number_of_image // 2] // 10 + 100
             self.loaded = True
         except Exception as e:
             print(path_to_series, self.loaded)
@@ -64,21 +67,24 @@ class Series(object):
     def meta_load(self, meta_data):
         try:
             if type(meta_data) is FileDataset:
-                for key, _ in self.patient_info.items():
+                for key, _ in self.series_info.items():
                     value = getattr(meta_data, key, '')
-                    self.patient_info.update({key: value})
+                    if key == 'ContentDate' or key == 'PatientBirthDate':
+                        value = '.'.join([value[6:], value[4:6], value[:4]])
+                    self.series_info.update({key: value})
 
                 x, y = getattr(meta_data, 'PixelSpacing', [1, 1])
-                z = float(getattr(meta_data, 'SliceThickness', 2)) + \
-                    float(getattr(meta_data, 'spacingBetweenSlices', 0))
-                self.metrics = np.array([z, float(y), float(x)])
+                z_t = float(getattr(meta_data, 'SliceThickness', 2))
+                z_s = float(getattr(meta_data, 'spacingBetweenSlices', 0))
+                self.metrics = np.array([z_t + z_s, float(y), float(x)])
+                self.series_info.update({'SliceThickness': z_t})
                 self.series_id = getattr(meta_data, 'SeriesInstanceUID', -1)
                 self.study_id = getattr(meta_data, 'StudyInstanceUID', -1)
         except Exception as e:
             print(e)
 
-    def get_patient_info(self):
-        return self.patient_info
+    def get_series_info(self):
+        return self.series_info
 
     def get_metric(self):
         return self.metrics
@@ -91,3 +97,6 @@ class Series(object):
 
     def get_status(self):
         return self.loaded
+
+    def get_miniature(self):
+        return self.miniature

@@ -6,6 +6,9 @@ class MAIA:
         PercentVisibleImageDicomViewer = 0.95
 
     class TextSetting:
+        PatientInfoInPatientView = "<p style='color: black; font-size: 16px' > " \
+                                   " PN: %s <br> BD: %s <br> Series:%s</p>"
+
         DicomViewerInitText = '<p align="center" style="font-size: 90px">' \
                               '<font face="Freestyle Script" color="darkgray"> %s </p>'
         NumberSliceViewerTest = "<font color='white'>Slice: %s</font>"
