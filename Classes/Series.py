@@ -55,7 +55,7 @@ class Series(object):
 
             dicom_files_name = series_reader.GetGDCMSeriesFileNames(path_to_series)
             series_reader.SetFileNames(dicom_files_name)
-            self.image = sitk.GetArrayFromImage(series_reader.Execute())
+            self.image = sitk.GetArrayFromImage(series_reader.Execute())[::-1]
             self.number_of_image = len(self.image)
             self.series_info.update({'ImagesNumber': self.number_of_image})
             self.miniature = self.image[self.number_of_image // 2] // 10 + 100

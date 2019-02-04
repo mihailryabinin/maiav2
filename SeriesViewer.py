@@ -20,7 +20,7 @@ class SeriesViewer(QLabel):
         self.image = None
         self.current_slice = 0
         self.max_slice = 0
-        self.image_contrast = 1
+        self.image_contrast = 2
         self.image_light = 100
         self.series = Series()
         self.selected_coordinate = np.array([])
@@ -93,6 +93,10 @@ class SeriesViewer(QLabel):
 
     def focusInEvent(self, QFocusEvent):
         self.set_focus.emit(self)
+        self.setStyleSheet('QLabel {background: rgb(20,20,20)}')
+
+    def focusOutEvent(self, QFocusEvent):
+        self.setStyleSheet('QLabel {background: black}')
 
     def mousePressEvent(self, QMouseEvent):
         try:
@@ -134,21 +138,27 @@ class SeriesViewer(QLabel):
         self.render_image()
 
     def update_viewer_settings(self):
-        image_size = min(self.height() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer,
-                         self.width() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer)
-        self.image_scale = [image_size, image_size]
-        if self.type_demonstration == "front":
-            self.max_slice = self.image.shape[0]
-        elif self.type_demonstration == "top":
-            self.max_slice = self.image.shape[1]
-        elif self.type_demonstration == "side":
-            self.max_slice = self.image.shape[2]
-        self.current_slice = self.max_slice // 2
-        self.render_image()
+        try:
+            image_size = min(self.height() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer,
+                             self.width() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer)
+            self.image_scale = [image_size, image_size]
+            if self.type_demonstration == "front":
+                self.max_slice = self.image.shape[0]
+            elif self.type_demonstration == "top":
+                self.max_slice = self.image.shape[1]
+            elif self.type_demonstration == "side":
+                self.max_slice = self.image.shape[2]
+            self.current_slice = self.max_slice // 2
+            self.render_image()
+        except Exception as e:
+            print(e)
 
     def change_type_demonstration(self, new_type):
         if new_type in ['front', 'side', 'top']:
-            self.type_demonstration = new_type
-            self.update_viewer_settings()
+            try:
+                self.type_demonstration = new_type
+                self.update_viewer_settings()
+            except Exception as e:
+                print(e)
         else:
             print('Not need type demonstration for viewer')
