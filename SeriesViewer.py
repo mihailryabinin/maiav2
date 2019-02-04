@@ -10,7 +10,7 @@ from MAIA import MAIA
 class SeriesViewer(QLabel):
     set_focus = pyqtSignal(QLabel)
 
-    def __init__(self, parent, type_demonstration='front'):
+    def __init__(self, parent, type_demonstration='side'):
         super().__init__()
         self.setParent(parent)
         self.init_widget()
@@ -36,17 +36,7 @@ class SeriesViewer(QLabel):
             if type(series) == Series:
                 self.series = series
                 self.image = self.series.get_image()
-                image_size = min(self.height() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer,
-                                 self.width() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer)
-                self.image_scale = [image_size, image_size]
-                if self.type_demonstration == "front":
-                    self.max_slice = self.image.shape[0]
-                elif self.type_demonstration == "top":
-                    self.max_slice = self.image.shape[1]
-                elif self.type_demonstration == "side":
-                    self.max_slice = self.image.shape[2]
-                self.current_slice = self.max_slice // 2
-                self.render_image()
+                self.update_viewer_settings()
             else:
                 print('SeriesViewer.load_series not need type of series')
         except Exception as e:
@@ -114,6 +104,12 @@ class SeriesViewer(QLabel):
     def keyPressEvent(self, QKeyEvent):
         if Qt.Key_0 <= QKeyEvent.key() <= Qt.Key_7:
             self.set_image_settings(QKeyEvent.key())
+        if Qt.Key_F == QKeyEvent.key():
+            self.change_type_demonstration('front')
+        if Qt.Key_S == QKeyEvent.key():
+            self.change_type_demonstration('side')
+        if Qt.Key_T == QKeyEvent.key():
+            self.change_type_demonstration('top')
 
     def set_image_settings(self, key):
         light, contrast = 80, 5
@@ -136,3 +132,23 @@ class SeriesViewer(QLabel):
 
         self.image_light, self.image_contrast = light, contrast
         self.render_image()
+
+    def update_viewer_settings(self):
+        image_size = min(self.height() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer,
+                         self.width() * MAIA.WindowsSettings.PercentVisibleImageDicomViewer)
+        self.image_scale = [image_size, image_size]
+        if self.type_demonstration == "front":
+            self.max_slice = self.image.shape[0]
+        elif self.type_demonstration == "top":
+            self.max_slice = self.image.shape[1]
+        elif self.type_demonstration == "side":
+            self.max_slice = self.image.shape[2]
+        self.current_slice = self.max_slice // 2
+        self.render_image()
+
+    def change_type_demonstration(self, new_type):
+        if new_type in ['front', 'side', 'top']:
+            self.type_demonstration = new_type
+            self.update_viewer_settings()
+        else:
+            print('Not need type demonstration for viewer')

@@ -10,7 +10,9 @@ class PacsDownloadViewer(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setParent(parent)
-        self.setGeometry(300, 300, 900, 500)
+        # self.setGeometry(300, 300, 900, 500)
+        self.setMinimumWidth(800)
+        self.setMinimumHeight(400)
         self.setWindowTitle('PACS')
         self.patient_list_widget = QTableWidget(0, 8, self)
         self.patient_list_widget.setSelectionBehavior(QTableWidget.SelectRows)

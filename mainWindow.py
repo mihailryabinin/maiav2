@@ -1,6 +1,5 @@
 import os
 import logging
-from imageSegmentation import ImageSegmentation
 from PyQt5.QtWidgets import QMainWindow, QHBoxLayout, QFileDialog, QAction, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
@@ -16,6 +15,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("MainWindow")
+        self.ctwidget = WindowWorkSpaceView(self)
         self.initWindow()
 
     def initWindow(self):
@@ -43,7 +43,9 @@ class MainWindow(QMainWindow):
         open_toolbar.setStyleSheet("QToolBar {background: rgb(100, 100, 100)}")
         #
         add_volume = QAction(QIcon('src/icon/addvolume.ico'), 'Add volume', self)
+        add_volume.setShortcut('Ctrl+Alt')
         add_volume.setStatusTip('Add new volume')
+        add_volume.triggered.connect(self.ctwidget.change_series_viewer_to_front)
 
         patient_info = QAction(QIcon('src/icon/patientinfo.ico'), 'Add patient info', self)
         patient_info.setStatusTip('Add patient info')
@@ -65,8 +67,6 @@ class MainWindow(QMainWindow):
         self.setStyleSheet('QMainWindow {border-image: url(src/background/main_window_background.png)}')
 
         # Dicom widgets
-        self.ctwidget = WindowWorkSpaceView(self)
-        # self.ctwidget = DicomViewersSpace.DicomViewersSpace(self)
 
         # Set dicom wigets on main widgets
         self.layout_main_windows = QHBoxLayout(self)

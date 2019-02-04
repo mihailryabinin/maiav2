@@ -112,7 +112,6 @@ class WindowWorkSpaceView(QFrame):
         if type(first_series) == Series:
             patient_name = str(first_series.get_series_info().get('PatientName', 'No name'))
             patient_birth_date = str(first_series.get_series_info().get('PatientBirthDate', '01.01.1900'))
-
             info_widget.setText(
                 MAIA.TextSetting.PatientInfoInPatientView % (patient_name, patient_birth_date, str(len_series)))
             return info_widget
@@ -130,3 +129,7 @@ class WindowWorkSpaceView(QFrame):
 
     def set_current_viewer(self, viewer):
         self.current_viewer = viewer
+        print(str(viewer))
+
+    def change_series_viewer_to_front(self):
+        self.current_viewer.change_type_demonstration('front')

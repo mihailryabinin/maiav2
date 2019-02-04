@@ -10,7 +10,9 @@ class PacsSettingView(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setParent(parent)
-        self.setGeometry(400, 400, 500, 300)
+        # self.setGeometry(400, 400, 500, 300)
+        self.setMinimumHeight(300)
+        self.setMinimumWidth(500)
         self.setWindowTitle('PACS setting')
         self.pacs_list_widget = QTableWidget(0, 4, self)
         self.pacs_list_widget.setSelectionBehavior(QTableWidget.SelectRows)
