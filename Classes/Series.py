@@ -1,7 +1,11 @@
 import logging
+import os
+import zipfile
+import json
 import pydicom as dicom
 import SimpleITK as sitk
 import numpy as np
+from Classes.Volume import Volume
 
 from pydicom.dataset import Dataset, FileDataset
 
@@ -31,6 +35,8 @@ class Series(object):
         ])
         self.loaded = False
         self.miniature = None
+        self.list_volumes = []
+        self.path_to_series = ''
 
     def download_series(self, folder):
         if folder.type == 'pacs':
@@ -49,6 +55,7 @@ class Series(object):
 
     def from_folder(self, path_to_series):
         try:
+            self.path_to_series = path_to_series
             series_reader = sitk.ImageSeriesReader()
             meta_info = dicom.read_file(series_reader.GetGDCMSeriesFileNames(path_to_series)[0])
             self.meta_load(meta_info)
@@ -69,6 +76,8 @@ class Series(object):
             if type(meta_data) is FileDataset:
                 for key, _ in self.series_info.items():
                     value = getattr(meta_data, key, '')
+                    if type(value) not in (str, int, float):
+                        value = str(value)
                     if key == 'ContentDate' or key == 'PatientBirthDate':
                         value = '.'.join([value[6:], value[4:6], value[:4]])
                     self.series_info.update({key: value})
@@ -83,6 +92,13 @@ class Series(object):
         except Exception as e:
             print(e)
 
+    def add_value(self, coordinate, size=None, type_volume=None, probability=None, is_doctor=False, is_confirmed=False):
+        if coordinate is not None:
+            try:
+                self.list_volumes.append(Volume(coordinate, size, type_volume, probability, is_doctor, is_confirmed))
+            except Exception as e:
+                print('add_value', e)
+
     def get_series_info(self):
         return self.series_info
 
@@ -95,8 +111,50 @@ class Series(object):
     def get_study_id(self):
         return self.study_id
 
+    def get_series_id(self):
+        return self.series_id
+
     def get_status(self):
         return self.loaded
 
     def get_miniature(self):
         return self.miniature
+
+    def json_code(self):
+        list_volumes = [volume.json_code() for volume in self.list_volumes]
+        file = {
+            'Type': 'series',
+            'SeriesID': self.series_id,
+            'StudyID': self.study_id,
+            'Information': self.series_info,
+            'Volumes': list_volumes,
+            # 'Image': self.image.tolist()
+        }
+        return file
+
+    def json_decode(self):
+        pass
+
+    def get_list_contour(self):
+        return [volume.get_coordinate() for volume in self.list_volumes]
+
+    def save_series(self):
+        try:
+            jsonfile = open(self.path_to_series + '/series_info.json', 'w')
+            json.dump(self.json_code(), jsonfile)
+            self.series_to_send()
+            return True
+        except Exception as e:
+            print(e, 'save_series')
+            return False
+
+    def series_to_send(self):
+        # self.save_series()
+        zipf = zipfile.ZipFile('tmp/%s.zip' % self.series_id, 'w', zipfile.ZIP_DEFLATED)
+        current_dir = os.getcwd()
+        os.chdir(self.path_to_series)
+        for file in os.listdir(self.path_to_series):
+            if '.dcm' in file or '.json' in file:
+                zipf.write(file)
+        zipf.close()
+        os.chdir(current_dir)

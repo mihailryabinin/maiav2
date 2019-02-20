@@ -19,6 +19,7 @@ class WindowWorkSpaceView(QFrame):
         self.list_patient = []
 
         self.window_viewer_layout = QGridLayout()
+        self.list_viewers = []
         self.current_viewer = None
 
         self.patient_viewer = QWidget()
@@ -65,16 +66,31 @@ class WindowWorkSpaceView(QFrame):
         elif number_windows == 4:
             series_viewer = SeriesViewer(self)
             series_viewer.set_focus.connect(self.set_current_viewer)
+            series_viewer.choose_point.connect(self.set_current_slice)
+            series_viewer.select_coordinate.connect(self.set_selected_coordinate)
             self.window_viewer_layout.addWidget(series_viewer, 0, 0)
+            self.list_viewers.append(series_viewer)
+
             series_viewer = SeriesViewer(self)
             series_viewer.set_focus.connect(self.set_current_viewer)
+            series_viewer.choose_point.connect(self.set_current_slice)
+            series_viewer.select_coordinate.connect(self.set_selected_coordinate)
             self.window_viewer_layout.addWidget(series_viewer, 0, 1)
+            self.list_viewers.append(series_viewer)
+
             series_viewer = SeriesViewer(self)
             series_viewer.set_focus.connect(self.set_current_viewer)
+            series_viewer.choose_point.connect(self.set_current_slice)
+            series_viewer.select_coordinate.connect(self.set_selected_coordinate)
             self.window_viewer_layout.addWidget(series_viewer, 1, 0)
+            self.list_viewers.append(series_viewer)
+
             series_viewer = SeriesViewer(self)
             series_viewer.set_focus.connect(self.set_current_viewer)
+            series_viewer.choose_point.connect(self.set_current_slice)
+            series_viewer.select_coordinate.connect(self.set_selected_coordinate)
             self.window_viewer_layout.addWidget(series_viewer, 1, 1)
+            self.list_viewers.append(series_viewer)
 
     def load_patient(self, list_patient):
         self.setVisible(True)
@@ -93,7 +109,7 @@ class WindowWorkSpaceView(QFrame):
                                                        ser.get_series_info(),
                                                        ser.get_miniature(),
                                                        [num_pat, num_ser])
-                    miniature_widget.set_focus.connect(self.load_serie_to_viewer)
+                    miniature_widget.set_focus.connect(self.load_series_to_viewer)
                     self.patient_viewer.layout().addWidget(miniature_widget)
             self.patient_viewer.layout().addStretch()
         except Exception as e:
@@ -119,7 +135,7 @@ class WindowWorkSpaceView(QFrame):
             info_widget.setText('No name')
             return info_widget
 
-    def load_serie_to_viewer(self, position):
+    def load_series_to_viewer(self, position):
         try:
             if self.current_viewer is not None:
                 pat, ser = position
@@ -129,7 +145,29 @@ class WindowWorkSpaceView(QFrame):
 
     def set_current_viewer(self, viewer):
         self.current_viewer = viewer
-        print(str(viewer))
 
-    def change_series_viewer_to_front(self):
-        self.current_viewer.change_type_demonstration('front')
+    def set_current_slice(self, slice_point, series_id):
+        try:
+            for widget in self.list_viewers:
+                widget.set_current_slice(slice_point, series_id)
+                # print(slice_point, series_id)
+        except Exception as e:
+            print(e, 'set_current_slice')
+
+    def set_selected_coordinate(self, coordinate, series_id):
+        try:
+            for widget in self.list_viewers:
+                widget.set_selected_coordinate(coordinate, series_id)
+                # print(slice_point, series_id)
+        except Exception as e:
+            print(e, 'set_current_slice')
+
+    def change_show_contour(self):
+        try:
+            for widget in self.list_viewers:
+                widget.change_show_all()
+        except Exception as e:
+            print(e, 'change_show_contour')
+
+    def save_series(self):
+        self.current_viewer.save_series()
