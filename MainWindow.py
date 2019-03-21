@@ -5,10 +5,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize
 from MAIA import MAIA
 from DownloadViews.PacsDownloaderView import PacsDownloadViewer
-from Classes.FolderDownload import FolderDownload
+from classes.FolderDownload import FolderDownload
 from WindowWorkSpaceView import WindowWorkSpaceView
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 
 class MainWindow(QMainWindow):
@@ -66,8 +66,15 @@ class MainWindow(QMainWindow):
         #
         send_to_ai = QAction(QIcon('src/icon/sendtoai.ico'), 'Send to AIzimov', self)
         send_to_ai.setStatusTip('Send to AIzimov')
+        send_to_ai.triggered.connect(self.ctwidget.send_series)
+
+        get_to_ai = QAction(QIcon('src/icon/getfromai.ico'), 'Get from AIzimov', self)
+        get_to_ai.setStatusTip('Get from AIzimov')
+        get_to_ai.triggered.connect(self.ctwidget.get_from_aizimov)
+
         az_toolbar = self.addToolBar('AI')
         az_toolbar.addAction(send_to_ai)
+        az_toolbar.addAction(get_to_ai)
         az_toolbar.setIconSize(QSize(32, 32))
         az_toolbar.setStyleSheet("QToolBar {background: rgb(100, 100, 100)}")
 

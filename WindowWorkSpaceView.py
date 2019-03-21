@@ -1,7 +1,9 @@
 from PyQt5.QtCore import Qt, QObject
-from PyQt5.QtWidgets import QFrame, QGridLayout, QDesktopWidget, QHBoxLayout, QWidget, QVBoxLayout, QScrollArea, QLabel
-
-from Classes.Series import Series
+from PyQt5.QtWidgets import QFrame, QGridLayout, QDesktopWidget, QHBoxLayout, QWidget, QVBoxLayout, QScrollArea, \
+    QLabel, QMessageBox
+from threading import Thread
+from Aizimov import send_patient_to_predict, is_server_ready, get_patient_from_predict
+from classes.Series import Series
 from PatientMiniView import PatientMiniView
 from SeriesViewer import SeriesViewer
 from MAIA import MAIA
@@ -170,4 +172,50 @@ class WindowWorkSpaceView(QFrame):
             print(e, 'change_show_contour')
 
     def save_series(self):
-        self.current_viewer.save_series()
+        try:
+            if self.current_viewer is not None:
+                self.current_viewer.save_series()
+        except Exception as e:
+            print(e, 'save_series')
+
+    def send_series(self):
+        try:
+            if self.current_viewer is not None:
+                if is_server_ready():
+                    Thread(target=self.send_to_aizimov, args=()).start()
+        except Exception as e:
+            print(e, 'send_series_to_aizimov')
+
+    def send_to_aizimov(self):
+        result = self.current_viewer.get_file_to_send()
+        if result is not None:
+            send_patient_to_predict(result)
+
+    def get_from_aizimov(self):
+        list_series_id = []
+        message = ['RESULTS:']
+        try:
+            for patient in self.list_patient:
+                list_series = patient.get_series()
+                for series in list_series:
+                    list_series_id.append(series.get_series_id())
+            if len(list_series_id):
+                result = {'SeriesIDs': list_series_id}
+                response = get_patient_from_predict(result)
+                for patient in self.list_patient:
+                    list_series = patient.get_series()
+                    for series in list_series:
+                        if series.get_series_id() in response.keys():
+                            series_info = response[series.get_series_id()]
+                            series.series_from_dict(series_info)
+                            # print(series_info['Information']['PatientName'], len(series_info['Volumes']))
+                            message.append('For %s found %s nodules' % (
+                                str(series_info['Information']['PatientName']), str(len(series_info['Volumes']))))
+                for widget in self.list_viewers:
+                    widget.repaint()
+            message = '<br>'.join(message)
+            QMessageBox.information(self.parent(), 'Result from aizimov',
+                                    MAIA.TextSetting.InformationMessage % message,
+                                    QMessageBox.Ok)
+        except Exception as e:
+            print(e, 'get_from_aizimov')

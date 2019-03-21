@@ -1,4 +1,4 @@
-from pynetdicom3 import AE
+from pynetdicom import AE
 from pydicom.dataset import Dataset, DataElement
 from copy import deepcopy
 

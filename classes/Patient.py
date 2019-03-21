@@ -1,4 +1,4 @@
-from Classes.Series import Series
+from classes.Series import Series
 
 
 class Patient(object):

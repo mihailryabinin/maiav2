@@ -1,4 +1,4 @@
-from Classes.PacsConfig import PacsConfig
+from classes.PacsConfig import PacsConfig
 
 
 class PacsDownload(object):

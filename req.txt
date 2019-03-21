@@ -1,7 +1,8 @@
+python3.5
 pyqt5
 numpy
-pynetdicom3
+pynetdicom
 pydicom
 simpleitk
-python3.5
 pillow
+requests

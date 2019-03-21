@@ -1,6 +1,6 @@
 import os
-from Classes.Series import Series
-from Classes.Patient import Patient
+from classes.Series import Series
+from classes.Patient import Patient
 from numpy import unique, array
 
 

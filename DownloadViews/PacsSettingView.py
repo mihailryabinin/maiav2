@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QDialog, QTableWidget, QVBoxLayout, QHBoxLayout, QLi
     QMessageBox, QToolButton
 from PyQt5.QtGui import QRegExpValidator, QIcon
 from PyQt5.QtCore import QRegExp, Qt
-from Classes.PacsDownload import PacsDownload
+from classes.PacsDownload import PacsDownload
 
 
 class PacsSettingView(QDialog):

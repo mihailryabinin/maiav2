@@ -3,8 +3,9 @@ from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtWidgets import QLabel, QMessageBox
 import numpy as np
 from PIL import Image, ImageQt
-from Classes.Series import Series
-from VolumeDialog import VolumeDialog
+from classes.Series import Series
+from AddVolumeDialog import AddVolumeDialog
+from InfoVolumeDialog import InfoVolumeDialog
 from MAIA import MAIA
 
 
@@ -32,8 +33,10 @@ class SeriesViewer(QLabel):
         self.predicted_coordinate = np.array([])
         self.series_id_owner = ''
         self.picture_window = [0, 0, 1, 1]
-        self.volume_dialog = VolumeDialog(self.parent())
+        self.volume_dialog = AddVolumeDialog(self.parent())
         self.volume_dialog.load_info_button.clicked.connect(self.add_volume_info)
+        self.info_volume_dialog = InfoVolumeDialog(self.parent())
+        self.info_volume_dialog.delete_volume_button.clicked.connect(self.delete_volume)
 
     def init_widget(self):
         self.setObjectName('SeriesViewer')
@@ -120,8 +123,7 @@ class SeriesViewer(QLabel):
                 self.selected_coordinate = np.array([[None, None, None], [None, None, None]])
                 self.select_coordinate.emit(self.selected_coordinate, self.series_id_owner)
             if QMouseEvent.button() == Qt.RightButton and QMouseEvent.modifiers() == Qt.NoModifier:
-                if self.is_point_in_selected_area(QMouseEvent.x(), QMouseEvent.y()):
-                    self.volume_dialog.add_selected_value(QMouseEvent)
+                self.right_click(QMouseEvent)
         except Exception as e:
             print(e)
 
@@ -181,6 +183,15 @@ class SeriesViewer(QLabel):
 
         self.image_light, self.image_contrast = light, contrast
         self.render_image()
+
+    def right_click(self, QMouseEvent):
+        volume_info = self.get_volume_from_point(QMouseEvent.x(), QMouseEvent.y())
+        if volume_info is not None:
+            coordinate = self.return_real_point(QMouseEvent.x(), QMouseEvent.y())
+            self.info_volume_dialog.update_selected_value(QMouseEvent, coordinate, volume_info)
+        elif self.is_point_in_selected_area(QMouseEvent.x(), QMouseEvent.y()):
+            volume_size = self.series.get_volume_size(np.sort(self.selected_coordinate, axis=0))
+            self.volume_dialog.add_selected_value(QMouseEvent, volume_size)
 
     def update_viewer_settings(self):
         try:
@@ -356,10 +367,10 @@ class SeriesViewer(QLabel):
 
     def add_volume_info(self):
         try:
-            type_volume, is_confirmed = self.volume_dialog.get_volume_info()
+            size_volume, type_volume, is_confirmed = self.volume_dialog.get_volume_info()
             coordinate = np.sort(self.selected_coordinate, axis=0)
             self.series.add_value(coordinate=coordinate, type_volume=type_volume, is_doctor=True,
-                                  is_confirmed=is_confirmed)
+                                  is_confirmed=is_confirmed, size=size_volume)
             QMessageBox.information(self.parent(), 'Volume is added',
                                     MAIA.TextSetting.InformationMessage % (type_volume + ' is saved'),
                                     QMessageBox.Ok)
@@ -380,7 +391,7 @@ class SeriesViewer(QLabel):
     def get_current_contour(self):
         try:
             list_current_coordinate = []
-            for coordinate in self.series.get_list_contour():
+            for coordinate in self.series.get_list_contour_from_doctor():
                 current_coordinate = None
                 if self.type_demonstration == "front":
                     if coordinate[0, 0] <= self.current_slice <= coordinate[1, 0]:
@@ -404,14 +415,39 @@ class SeriesViewer(QLabel):
         except Exception as e:
             print(e, 'get_current_contour')
 
+    def get_volume_from_point(self, x, y):
+        try:
+            coordinate = self.return_real_point(x, y)
+            return self.series.get_volume_from_point(*coordinate)
+        except Exception as e:
+            print(e, 'get_volume_from_point')
+
+    def delete_volume(self):
+        try:
+            coordinate = self.info_volume_dialog.get_volume_coordinate()
+            if coordinate is not None:
+                self.series.delete_volume_from_point(*coordinate)
+                self.info_volume_dialog.close()
+                self.repaint()
+        except Exception as e:
+            print(e, 'delete_volume')
+
     def save_series(self):
         if self.series.save_series():
             QMessageBox.information(self.parent(), 'Save series',
                                     MAIA.TextSetting.InformationMessage % (
-                                                self.series.get_series_info()['PatientName'] + ' is saved'),
+                                            self.series.get_series_info()['PatientName'] + ' is saved'),
                                     QMessageBox.Ok)
         else:
             QMessageBox.information(self.parent(), 'Save series',
                                     MAIA.TextSetting.InformationMessage % (
                                             self.series.get_series_info()['PatientName'] + ' is NOT saved'),
                                     QMessageBox.Ok)
+
+    def get_file_to_send(self):
+        if self.image is not None:
+            try:
+                return self.series.series_to_send_zip()
+            except Exception as e:
+                print(e, 'get_file_to_send')
+                return None

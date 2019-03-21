@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPixmap, QPainter, QPen
 from PyQt5.QtWidgets import QLabel, QVBoxLayout
 import numpy as np
 from PIL import Image, ImageQt
-from Classes.Series import Series
+from classes.Series import Series
 from MAIA import MAIA
 
 

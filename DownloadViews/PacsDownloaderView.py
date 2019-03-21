@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QToolButton, QComboBox, QDialog, QTableWidget, QVBox
     QLineEdit, QPushButton, QTableWidgetItem, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Classes.PacsDownload import PacsDownload
+from classes.PacsDownload import PacsDownload
 from DownloadViews.PacsSettingView import PacsSettingView
 
 
